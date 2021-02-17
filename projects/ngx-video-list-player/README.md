@@ -10,7 +10,7 @@ This is an Angular module. It helps to integrate a video player with a video lis
 
 Check out [the demo](https://pepe19000.github.io/Demo/menu/NgxVideoListPlayer)!
 
-*Note: v11.0.2 is out and supports Angular 11!*
+*Note: v11.0.3 is out and supports Angular 11!*
 
 ## Install
 
@@ -113,7 +113,7 @@ export class AppComponent {
 | `videoListDisplayMode` | string?: `inline`, `block`, `none` | You can override the video list responsive display logic for a fix display setting. *!!This is not dynamic property* |
 | `volumeCookieName` | string? | If you fill it, browser saves current volume as a cookie. The cookie's name depends on what you set |
 | `videoIndexCookieName` | string? | If you fill it, browser save current video index as a cookie. The cookie's name depends on what you set. *Recommended to use unique cookie name in each tag* |
-| `subtitleText` | string? | Dynamic property for subtitle container's header text. Default is `Subtitle` |
+| `subtitleText` | string? | Dynamic property for subtitle container's header text. Default is `Subtitles` |
 | `subtitleOffText` | string? | Dynamic property for subtitle's turn off text. Default is `Off` |
 
 
