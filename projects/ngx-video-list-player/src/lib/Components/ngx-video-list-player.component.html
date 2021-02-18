@@ -39,44 +39,40 @@
             <svg (click)="playPause()" height="33" width="33">
               <path id='line1' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
                 <animate
-                  attributeName="d"
-                  dur="300ms" 
-                  from="M 8 7 L 26 17 L 26 17 L 8 26"
-                  to="M 8 7 L 13 7 L 13 26 L 8 26"
-                  begin="indefinite"
-                  fill="freeze"
-                  #from_pause_to_play />
+                    attributeName="d"
+                    dur="300ms" 
+                    from="M 8 7 L 26 17 L 26 17 L 8 26"
+                    to="M 8 7 L 13 7 L 13 26 L 8 26"
+                    begin="indefinite"
+                    fill="freeze"
+                    #from_pause_to_play />
+                <animate
+                    attributeName="d"
+                    dur="300ms"
+                    from="M 8 7 L 13 7 L 13 26 L 8 26"
+                    to="M 8 7 L 26 17 L 26 17 L 8 26"
+                    fill="freeze"
+                    #from_play_to_pause
+                    begin="indefinite" />
               </path>
               <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
-                <animate
-                  attributeName="d"
-                  dur="300ms" 
-                  from="M 8 7 L 26 17 L 26 17 L 8 26"
-                  to="M 19 7 L 24 7 L 24 26 L 19 26"
-                  begin="indefinite"
-                  fill="freeze"
-                  #from_pause_to_play />
-              </path>
-              <animate
-                  href="#line2"
-                  xlink:href="#line2"
-                  attributeName="d"
-                  dur="300ms"
-                  from="M 19 7 L 24 7 L 24 26 L 19 26"
-                  to="M 8 7 L 26 17 L 26 17 L 8 26"
-                  fill="freeze"
-                  #from_play_to_pause
-                  begin="indefinite" />
-              <animate
-                  href="#line1"
-                  xlink:href="#line1"
-                  attributeName="d"
-                  dur="300ms"
-                  from="M 8 7 L 13 7 L 13 26 L 8 26"
-                  to="M 8 7 L 26 17 L 26 17 L 8 26"
-                  fill="freeze"
-                  #from_play_to_pause
-                  begin="indefinite" />
+                  <animate
+                      attributeName="d"
+                      dur="300ms" 
+                      from="M 8 7 L 26 17 L 26 17 L 8 26"
+                      to="M 19 7 L 24 7 L 24 26 L 19 26"
+                      begin="indefinite"
+                      fill="freeze"
+                      #from_pause_to_play />
+                  <animate
+                      attributeName="d"
+                      dur="300ms"
+                      from="M 19 7 L 24 7 L 24 26 L 19 26"
+                      to="M 8 7 L 26 17 L 26 17 L 8 26"
+                      fill="freeze"
+                      #from_play_to_pause
+                      begin="indefinite" />
+              </path>             
             </svg>
           </div>      
           <div>
@@ -146,30 +142,7 @@
                     begin="indefinite"
                     fill="freeze"
                     #from_pause_to_play />
-                </path>
-                <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
                   <animate
-                    attributeName="d"
-                    dur="300ms" 
-                    from="M 8 7 L 26 17 L 26 17 L 8 26"
-                    to="M 19 7 L 24 7 L 24 26 L 19 26"
-                    begin="indefinite"
-                    fill="freeze"
-                    #from_pause_to_play />
-                </path>
-                <animate
-                    href="#line2"
-                    xlink:href="#line2"
-                    attributeName="d"
-                    dur="300ms"
-                    from="M 19 7 L 24 7 L 24 26 L 19 26"
-                    to="M 8 7 L 26 17 L 26 17 L 8 26"
-                    fill="freeze"
-                    #from_play_to_pause
-                    begin="indefinite" />
-                <animate
-                    href="#line1"
-                    xlink:href="#line1"
                     attributeName="d"
                     dur="300ms"
                     from="M 8 7 L 13 7 L 13 26 L 8 26"
@@ -177,6 +150,25 @@
                     fill="freeze"
                     #from_play_to_pause
                     begin="indefinite" />
+                </path>
+                <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
+                  <animate
+                      attributeName="d"
+                      dur="300ms" 
+                      from="M 8 7 L 26 17 L 26 17 L 8 26"
+                      to="M 19 7 L 24 7 L 24 26 L 19 26"
+                      begin="indefinite"
+                      fill="freeze"
+                      #from_pause_to_play />
+                  <animate
+                      attributeName="d"
+                      dur="300ms"
+                      from="M 19 7 L 24 7 L 24 26 L 19 26"
+                      to="M 8 7 L 26 17 L 26 17 L 8 26"
+                      fill="freeze"
+                      #from_play_to_pause
+                      begin="indefinite" />
+                </path>                
               </svg>
             </div>
             <div *ngIf="!isMobileDevice && isNextVideo()">
