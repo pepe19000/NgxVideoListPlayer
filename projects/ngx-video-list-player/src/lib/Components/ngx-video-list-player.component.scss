@@ -168,15 +168,12 @@ div.video-main-container {
         }
 
         .video-list-element {
-            height: 50px;
-            padding: 5px;
+            height: 69px;
             color: #313131;
             background-color: #97a5a5;
             border: 1px solid #ddd;
             user-select: none;
             cursor: pointer;
-            padding-top: 9px;
-            padding-bottom: 9px;
 
             &.active {
                 background: linear-gradient(140deg, #363534 0%, #8b6283 50%, #ce91c2 75%) !important;
@@ -190,6 +187,7 @@ div.video-main-container {
             .video-list-content-container {
                 height: 50px;
                 display: flex;
+                padding: 9px 5px;
                 justify-content: center;
                 flex-direction: column;
 
@@ -220,14 +218,10 @@ div.video-main-container {
         display: inline-block;
     
         div.video-title {
-            width: calc(100% - #{$video-title-left});
+            width: 100%;
             background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.0));
             position: absolute;
-            left: 0;
-            margin-top: 1;
-            padding-top: 11px;
-            padding-left: $video-title-left;
-            padding-bottom: 18px;
+            left: 0;            
             color: white;         
             transition: opacity $media-control-transition-opacity-sec;
             transition-timing-function: linear;
@@ -242,13 +236,13 @@ div.video-main-container {
             }
 
             .video-title-text {                
+                padding-top: 11px;
+                padding-left: $video-title-left;
+                padding-bottom: 18px;
                 padding-right: $video-title-left;
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                white-space: normal;
-                -webkit-line-clamp: 1;
+                white-space: nowrap;
             }
         }
     
@@ -497,7 +491,6 @@ div.video-main-container {
             #media-controls {
                 .progress-thumb {
                     position: absolute;
-                    bottom: 0;
                     width: calc(100% - 19px);
                     left: 9px;
                     bottom: 39px;

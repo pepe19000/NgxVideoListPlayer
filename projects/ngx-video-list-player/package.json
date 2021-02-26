@@ -1,6 +1,6 @@
 {
   "name": "ngx-video-list-player",
-  "version": "11.0.6",
+  "version": "11.0.7",
   "description": "A simple Angular video player with video list. No dependecies. Only custom controls, css, ts and svgs.",
   "author": "Péter Babják",
   "repository": {
@@ -19,7 +19,8 @@
     "player",
     "custom",
     "list",
-    "control"
+    "control",
+    "ngx"
   ],
   "license": "MIT",
   "peerDependencies": {
