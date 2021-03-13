@@ -36,6 +36,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     @Input() config: IVideoConfig;
     @Output() onTimeUpdate = new EventEmitter();
     @Output() onCanPlay = new EventEmitter();
+    @Output() onLoadedMetadata = new EventEmitter();
     
     private visibleMobileDeviceMainPprContainer: boolean = false;
     private disableControlHide: boolean = false;
@@ -171,14 +172,17 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     videoEventHandler(ev: Event):void {
         switch(ev.type){
             case VideoEventTypes.TimeUpdate: 
-                this.onTimeUpdate.emit();
                 if(!this.videoElement.duration)
+                {
+                    this.onTimeUpdate.emit();
                     return;
-
+                }
+                
                 const percentage = (100 / this.videoElement.duration) * this.videoElement.currentTime;
                 this.renderer.setStyle(this.progressContainer.nativeElement, "width", `${percentage}%`);
                 this.currentTime = `${Math.floor(this.videoElement.currentTime / 60)}:${Math.floor(this.videoElement.currentTime % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
                 this.progressSliderValue = percentage * (this.progressSliderMaxValue / 100);
+                this.onTimeUpdate.emit();
                 break;
             case VideoEventTypes.LoadedMetadata: 
                 this.duration = `${Math.floor(this.videoElement.duration / 60)}:${Math.floor(this.videoElement.duration % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
@@ -186,6 +190,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.supportFullScreen ||= this.videoElement.webkitSupportsFullscreen;
                 if(this.isSafariBrowser)
                     this.canPlayEvent();
+
+                this.onLoadedMetadata.emit();
                 break;
             case VideoEventTypes.FullScreenChange:
                 this.isFullScreen = !!document.fullscreenElement;
@@ -222,8 +228,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.pauseEvent();
                 break;
             case VideoEventTypes.CanPlay: 
-                this.onCanPlay.emit();
                 this.canPlayEvent();
+                this.onCanPlay.emit();
                 break;
             case VideoEventTypes.Error: 
                 this.resizeVideoListContainer();
