@@ -10,7 +10,7 @@ This is an Angular module. It helps to integrate a video player with a video lis
 
 Check out [the demo](https://pepe19000.github.io/Demo/menu/NgxVideoListPlayer)!
 
-*Note: v11.0.8 is out and supports Angular 11!*
+*Note: v11.0.9 is out and supports Angular 11!*
 
 ## Install
 

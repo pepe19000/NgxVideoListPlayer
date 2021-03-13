@@ -448,7 +448,9 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         if(!this.canPlay)
             return;
 
-        this.renderer.removeStyle(this.videoTitleContainer.nativeElement, "opacity")
+        if(this.videoTitleContainer)
+            this.renderer.removeStyle(this.videoTitleContainer.nativeElement, "opacity")
+
         this.renderer.removeStyle(this.mediaControlContainer.nativeElement, "opacity")
         this.renderer.removeStyle(this.mediaControlContainer.nativeElement, "visibility")
         this.renderer.removeStyle(this.meterContainer.nativeElement, "opacity")
@@ -476,7 +478,10 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
             this.renderer.setStyle(this.mediaControlContainer.nativeElement, "opacity", `0`)
             this.renderer.setStyle(this.mediaControlContainer.nativeElement, "visibility", "hidden");
             this.renderer.setStyle(this.meterContainer.nativeElement, "opacity", `0`)
-            this.renderer.setStyle(this.videoTitleContainer.nativeElement, "opacity", "0")
+            
+            if(this.videoTitleContainer)
+                this.renderer.setStyle(this.videoTitleContainer.nativeElement, "opacity", "0")
+
             if(this.mobileDeviceMainPprContainer) {
                 this.visibleMobileDeviceMainPprContainer = false;
                 this.renderer.setStyle(this.mobileDeviceMainPprContainer.nativeElement, "visibility", "hidden");
