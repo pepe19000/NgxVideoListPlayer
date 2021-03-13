@@ -189,7 +189,10 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.firstSourceLoad = true;
                 this.supportFullScreen ||= this.videoElement.webkitSupportsFullscreen;
                 if(this.isSafariBrowser)
+                {
                     this.canPlayEvent();
+                    this.onCanPlay.emit();
+                }
 
                 this.onLoadedMetadata.emit();
                 break;
