@@ -35,6 +35,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
 
     @Input() config: IVideoConfig;
     @Output() onTimeUpdate = new EventEmitter();
+    @Output() onCanPlay = new EventEmitter();
     
     private visibleMobileDeviceMainPprContainer: boolean = false;
     private disableControlHide: boolean = false;
@@ -221,6 +222,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.pauseEvent();
                 break;
             case VideoEventTypes.CanPlay: 
+                this.onCanPlay.emit();
                 this.canPlayEvent();
                 break;
             case VideoEventTypes.Error: 

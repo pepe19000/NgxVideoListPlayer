@@ -10,7 +10,7 @@ This is an Angular module. It helps to integrate a video player with a video lis
 
 Check out [the demo](https://pepe19000.github.io/Demo/menu/NgxVideoListPlayer)!
 
-*Note: v11.0.10 is out and supports Angular 11!*
+*Note: v11.0.11 is out and supports Angular 11!*
 
 ## Install
 
@@ -111,7 +111,8 @@ export class AppComponent {
 
 | Property | Parameter | Description
 | --- | --- | --- |
-| `onTimeUpdate` | empty | Fire each ontimeupdate event |
+| `onTimeUpdate` | empty | Fire at each ontimeupdate event |
+| `onCanPlay` | empty | Fire at each onCanPlay event |
 
 ### IVideoConfig
 
