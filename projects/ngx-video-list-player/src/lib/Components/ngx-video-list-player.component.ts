@@ -1,9 +1,10 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, Output, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
 import { VideoEventTypes } from '../Models/video-event-types.model';
 import { } from '../Models/global.model';
 import { IVideoConfig } from '../Models/ngx-video-list-player.config';
 import { IExtendedVideoSubtitle } from '../Models/custom.config';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'ngx-video-list-player',
@@ -33,6 +34,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     @ViewChild("subtitleModal") subtitleModal: ElementRef;
 
     @Input() config: IVideoConfig;
+    @Output() onTimeUpdate = new EventEmitter();
     
     private visibleMobileDeviceMainPprContainer: boolean = false;
     private disableControlHide: boolean = false;
@@ -168,6 +170,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     videoEventHandler(ev: Event):void {
         switch(ev.type){
             case VideoEventTypes.TimeUpdate: 
+                this.onTimeUpdate.emit();
                 if(!this.videoElement.duration)
                     return;
 
