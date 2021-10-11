@@ -2,15 +2,22 @@
 
 This is an Angular module. It helps to integrate a video player with a video list. The video's base controls are disable and it uses custom controls for control video events.
 
-*!!No support for IE*
+## Update
+
+Support Youtube videos from v12.2.2
+
+## Info
+*No support for IE*
 
 *Mobile browsers got different designe for an easier handling*
+
+*In case of Youtube source, subtitles and PIP are not supported*
 
 [![npm downloads](https://img.shields.io/npm/dm/ngx-video-list-player.svg)](http://npm-stat.com/charts.html?package=ngx-video-list-player)
 
 Check out [the demo](https://pepe19000.github.io/Demo/menu/NgxVideoListPlayer)!
 
-*Note: v12.2.1 is out and supports Angular 12!*
+*Note: v12.2.4 is out and supports Angular 12 and Youtube videos!*
 
 ## Install
 
@@ -58,6 +65,12 @@ export class AppModule { }
 
 *Important: folder contents of `./node_modules/ngx-video-list-player/assets` always have to be in `assets` folder under root*
 
+4) From v12.2.2 you have to install `youtube-player` package as devDependency if npm didn't install automatic:
+`npm install @angular/youtube-player --save-dev`
+
+5) From v12.2.2 you have to add Youtube API script to index.html: 
+`<script src="https://www.youtube.com/iframe_api"></script>`
+
 ## Basics
 
 ### Usage
@@ -87,6 +100,13 @@ export class AppComponent {
             src: "{video1_src}",
             videoName: "{video1_name}",
             artist: "{video1_artist}"
+        },
+        //In case of Youtube
+        {
+            src: "xxxxxxxx", //e.g.: https://www.youtube.com/watch?v=xxxxxxxx
+            videoName: "{video1_name}",
+            artist: "{video1_artist}",
+            isYoutubeVideo: true
         },
         {
             src: "{video2_src}",
@@ -140,6 +160,7 @@ export class AppComponent {
 | `type` | string? | Video type |
 | `artist` | string? | Video artist. Appear in the video list |
 | `subtitles` | IVideoSubtitle[]? | Video subtitles come here |
+| `isYoutubeVideo` | boolean? | Video source is Youtube link |
 
 
 ### IVideoSubtitle

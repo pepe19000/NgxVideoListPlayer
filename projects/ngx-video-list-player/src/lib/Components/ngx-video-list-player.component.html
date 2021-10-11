@@ -1,258 +1,261 @@
 <div class="video-main-container">
-    <div *ngIf="isMobileDevice && subtitles && subtitles.length > 0" class="subtitle-modal" #subtitleModal>
-      <div stopPropagation class="modal-content">
-        <!-- <span class="close" (click)="closeSubtitleModal()">&times;</span> -->
-        <div class="modal-title">
-          {{ config.subtitleText || 'Subtitles' }}
-        </div>
-        <div class="modal-container">
-          <div [ngClass]="{'active': !actualSubtitleId}" (click)="setSubtitle()">
-              {{ config.subtitleOffText || 'Off' }}
-          </div>
-          <div *ngFor="let subtitle of subtitles" [ngClass]="{ 'active': actualSubtitleId == subtitle.id }" (click)="setSubtitle(subtitle.id)">
-            {{ subtitle.name }}
-          </div>
-        </div>
-        <div class="close-button-container">
-            <button class="close-button" (click)="openSubtitles(true)">Ok</button>
-        </div>
-      </div>  
-    </div>
-    <div id='media-player' class="custom-col-8" tabindex="-1" (focus)="mediaPlayerFocus()" (focusout)="mediaPlayerFocusOut()" #mediaPlayer (mousemove)="mediaPlayerMouseMove()" (mouseleave)="mediaPlayerMouseLeave()">
-      <div class="main-ppr-icon-container" *ngIf="canPlay != null && (videoElement.paused || videoElement.ended || !canPlay)">
-        <svg height="100" width="100" (click)="!isMobileDevice ? playPause() : emptyVoid()">
-          <circle *ngIf="!isMobileDevice" cx="50" cy="50" r="40" style="cursor: pointer;" stroke="rgb(234 13 191 / 45%)" stroke-width="1" fill="rgb(255 255 255 / 23%)" />
-          <polygon *ngIf="!isMobileDevice && videoElement.paused && canPlay && !videoElement.ended" points="40,30 40,70 70,50" style="fill:#ea0dbf;stroke:purple;stroke-width:1;cursor: pointer;" />
-          <use *ngIf="!isMobileDevice && videoElement.ended" xlink:href="./assets/media-controls.svg#replay" href="./assets/media-controls.svg#replay" x="1" y="0" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
-          <use *ngIf="!canPlay && !isMobileDevice" xlink:href="./assets/media-controls.svg#can_not_play" href="./assets/media-controls.svg#can_not_play" x="0" y="0" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
-          <use *ngIf="!canPlay && isMobileDevice" xlink:href="./assets/media-controls.svg#can_not_play_mobile" href="./assets/media-controls.svg#can_not_play_mobile" x="11" y="5" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
-        </svg>
+  <div *ngIf="isMobileDevice && subtitles && subtitles.length > 0" class="subtitle-modal" #subtitleModal>
+    <div stopPropagation class="modal-content">
+      <!-- <span class="close" (click)="closeSubtitleModal()">&times;</span> -->
+      <div class="modal-title">
+        {{ config.subtitleText || 'Subtitles' }}
       </div>
-      <div *ngIf="isMobileDevice && canPlay == true" class="mobile-device-main-ppr-container" #mobileDeviceMainPprContainer (click)="videoClickEvent()">
-        <div class="mobile-device-main-ppr-container-helper">
-          <div>
-            <svg (click)="prev()" height="33" width="33">
-              <use xlink:href="./assets/media-controls.svg#prev" href="./assets/media-controls.svg#prev" x="0" y="0" />
-            </svg>
-          </div>
-          <div style="margin-left: 2px;">
-            <svg (click)="playPause()" height="33" width="33">
-              <path id='line1' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
+      <div class="modal-container">
+        <div [ngClass]="{'active': !actualSubtitleId}" (click)="setSubtitle()">
+            {{ config.subtitleOffText || 'Off' }}
+        </div>
+        <div *ngFor="let subtitle of subtitles" [ngClass]="{ 'active': actualSubtitleId == subtitle.id }" (click)="setSubtitle(subtitle.id)">
+          {{ subtitle.name }}
+        </div>
+      </div>
+      <div class="close-button-container">
+          <button class="close-button" (click)="openSubtitles(true)">Ok</button>
+      </div>
+    </div>  
+  </div>
+  <div id='media-player' class="custom-col-8" tabindex="-1" (focus)="mediaPlayerFocus()" (focusout)="mediaPlayerFocusOut()" #mediaPlayer (mousemove)="mediaPlayerMouseMove()" (mouseleave)="mediaPlayerMouseLeave()">
+    <div class="main-ppr-icon-container" *ngIf="canPlay != null && (videoElement.paused || videoElement.ended || !canPlay || (actualVideo != null && actualVideo.isYoutubeVideo && (youtubeIsPaused || youtubeIsEnded)))">
+      <svg height="100" width="100" (click)="!isMobileDevice ? playPause() : emptyVoid()">
+        <circle *ngIf="!isMobileDevice && actualVideo != null && (!actualVideo.isYoutubeVideo || youtubeIsPaused || youtubeIsEnded)" cx="50" cy="50" r="40" style="cursor: pointer;" stroke="rgb(234 13 191 / 45%)" stroke-width="1" fill="rgb(255 255 255 / 23%)" />
+        <polygon *ngIf="!isMobileDevice && canPlay && (actualVideo != null && (!actualVideo.isYoutubeVideo && videoElement.paused && !videoElement.ended || actualVideo.isYoutubeVideo && youtubeIsPaused))" points="40,30 40,70 70,50" style="fill:#ea0dbf;stroke:purple;stroke-width:1;cursor: pointer;" />
+        <use *ngIf="!isMobileDevice && (actualVideo != null && (!actualVideo.isYoutubeVideo && videoElement.ended || actualVideo.isYoutubeVideo && youtubeIsEnded))" xlink:href="./assets/media-controls.svg#replay" href="./assets/media-controls.svg#replay" x="1" y="0" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
+        <use *ngIf="!canPlay && !isMobileDevice" xlink:href="./assets/media-controls.svg#can_not_play" href="./assets/media-controls.svg#can_not_play" x="0" y="0" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
+        <use *ngIf="!canPlay && isMobileDevice" xlink:href="./assets/media-controls.svg#can_not_play_mobile" href="./assets/media-controls.svg#can_not_play_mobile" x="11" y="5" style="fill:#ea0dbf;stroke:purple;stroke-width:1" />
+      </svg>
+    </div>
+    <div *ngIf="isMobileDevice && canPlay == true" class="mobile-device-main-ppr-container" #mobileDeviceMainPprContainer (click)="videoClickEvent()">
+      <div class="mobile-device-main-ppr-container-helper">
+        <div>
+          <svg (click)="prev()" height="33" width="33">
+            <use xlink:href="./assets/media-controls.svg#prev" href="./assets/media-controls.svg#prev" x="0" y="0" />
+          </svg>
+        </div>
+        <div style="margin-left: 2px;">
+          <svg (click)="playPause()" height="33" width="33">
+            <path id='line1' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
+              <animate
+                  attributeName="d"
+                  dur="300ms" 
+                  from="M 8 7 L 26 17 L 26 17 L 8 26"
+                  to="M 8 7 L 13 7 L 13 26 L 8 26"
+                  begin="indefinite"
+                  fill="freeze"
+                  #from_pause_to_play />
+              <animate
+                  attributeName="d"
+                  dur="300ms"
+                  from="M 8 7 L 13 7 L 13 26 L 8 26"
+                  to="M 8 7 L 26 17 L 26 17 L 8 26"
+                  fill="freeze"
+                  #from_play_to_pause
+                  begin="indefinite" />
+            </path>
+            <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
                 <animate
                     attributeName="d"
                     dur="300ms" 
                     from="M 8 7 L 26 17 L 26 17 L 8 26"
-                    to="M 8 7 L 13 7 L 13 26 L 8 26"
+                    to="M 19 7 L 24 7 L 24 26 L 19 26"
                     begin="indefinite"
                     fill="freeze"
                     #from_pause_to_play />
                 <animate
                     attributeName="d"
                     dur="300ms"
-                    from="M 8 7 L 13 7 L 13 26 L 8 26"
+                    from="M 19 7 L 24 7 L 24 26 L 19 26"
                     to="M 8 7 L 26 17 L 26 17 L 8 26"
                     fill="freeze"
                     #from_play_to_pause
                     begin="indefinite" />
+            </path>             
+          </svg>
+        </div>      
+        <div>
+          <svg *ngIf="isNextVideo()" (click)="next()" height="33" width="33">
+              <use xlink:href="./assets/media-controls.svg#next" href="./assets/media-controls.svg#next" x="0" y="0" />
+          </svg>
+        </div>
+      </div>      
+    </div>
+    <div *ngIf="(config.isVideoLoader == null || config.isVideoLoader) && canPlay == null" class="loader-wrapper" [ngClass]="{ 'mobile-device': isMobileDevice }">
+        <div class="loader"></div>
+    </div>
+    <div *ngIf="((canPlay != null && (actualVideo != null && (!actualVideo.isYoutubeVideo && videoElement.ended || actualVideo.isYoutubeVideo && youtubeIsEnded))) || canPlay == false) && isNextVideo()" class="next-loader" [ngClass]="{ 'mobile-device': isMobileDevice }">
+      <ng-container *ngIf="isMobileDevice">
+        <svg>
+          <circle cx="50%" cy="50%" r="11%"/>
+        </svg>
+      </ng-container>
+      <ng-container *ngIf="!isMobileDevice">
+        <svg >
+          <circle cx="50%" cy="50%" r="42"/>
+        </svg>
+      </ng-container>
+    </div>
+    <div *ngIf="videoName && (actualVideo == null || !actualVideo.isYoutubeVideo)" class="video-title" #videoTitleContainer>
+        <div class="video-title-text">
+          {{ videoName }}          
+        </div>
+    </div>
+    <div class="video-container">
+      <div class="youtube-video-container" (click)="playPause()" [hidden]="actualVideo && !actualVideo.isYoutubeVideo" style="text-align: center;" (mousemove)="mediaPlayerMouseMove()" (mouseleave)="mediaPlayerMouseLeave()">
+        <youtube-player id="youtubePlayer" #youtubePlayer style="position: absolute; left: 0; pointer-events: none;"></youtube-player>
+      </div>
+      <video playsinline #mediaVideo [hidden]="actualVideo && actualVideo.isYoutubeVideo" controls width="100%" (click)="videoClickEvent()">
+          <source #mediaVideoSource [type]='videoType'>
+          <track *ngFor="let subtitle of subtitles; let i = index" [id]="subtitle.id" [label]="subtitle.name" kind="subtitles" [src]="subtitle.src" [attr.default]="subtitle.id == actualSubtitleId ? true : null">
+      </video>
+    </div>
+    <div id="media-control-container" #mediaControlContainer (mouseenter)="mediaControlContainerMouseEnter()" (mouseleave)="mediaControlContainerMouseLeave()">
+      <div id="media-controls">
+        <div class="progress-thumb">
+          <input [attr.disabled]="!canPlay ? true : null" type="range" min="0" [max]="progressSliderMaxValue" [value]="progressSliderValue" class="progress-slider" [ngClass]="{ 'mobile-device': isMobileDevice }" #progressSlider (input)="setProgressSlider(progressSlider.value)" (mousemove)="progressThumbMouseMove($event)" (mouseleave)="progressThumbMouseLeave()">
+        </div>
+        <div class="meter" #meter>
+          <span #progressContainer class="progress-container progress-base">
+            <span class="progress">
+            </span>
+          </span>
+          <span #progressContainerHover class="progress-container progress-hover">
+            <span class="progress"></span>
+          </span>
+          <span class="progress-container progress-helper" (mousemove)="progressHelperMouseMove($event)">
+            <span class="progress"></span>
+          </span>
+        </div>
+        <div id="control-buttons" [ngClass]="{ 'mobile-device': isMobileDevice }">
+          <div *ngIf="!isMobileDevice">
+            <svg (click)="prev()">
+                <use xlink:href="./assets/media-controls.svg#prev" href="./assets/media-controls.svg#prev" x="0" y="0" />
+            </svg>
+          </div>
+          <div *ngIf="!isMobileDevice">
+            <svg (click)="playPause()">
+              <path id='line1' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
+                <animate
+                  attributeName="d"
+                  dur="300ms" 
+                  from="M 8 7 L 26 17 L 26 17 L 8 26"
+                  to="M 8 7 L 13 7 L 13 26 L 8 26"
+                  begin="indefinite"
+                  fill="freeze"
+                  #from_pause_to_play />
+                <animate
+                  attributeName="d"
+                  dur="300ms"
+                  from="M 8 7 L 13 7 L 13 26 L 8 26"
+                  to="M 8 7 L 26 17 L 26 17 L 8 26"
+                  fill="freeze"
+                  #from_play_to_pause
+                  begin="indefinite" />
               </path>
               <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
-                  <animate
-                      attributeName="d"
-                      dur="300ms" 
-                      from="M 8 7 L 26 17 L 26 17 L 8 26"
-                      to="M 19 7 L 24 7 L 24 26 L 19 26"
-                      begin="indefinite"
-                      fill="freeze"
-                      #from_pause_to_play />
-                  <animate
-                      attributeName="d"
-                      dur="300ms"
-                      from="M 19 7 L 24 7 L 24 26 L 19 26"
-                      to="M 8 7 L 26 17 L 26 17 L 8 26"
-                      fill="freeze"
-                      #from_play_to_pause
-                      begin="indefinite" />
-              </path>             
+                <animate
+                    attributeName="d"
+                    dur="300ms" 
+                    from="M 8 7 L 26 17 L 26 17 L 8 26"
+                    to="M 19 7 L 24 7 L 24 26 L 19 26"
+                    begin="indefinite"
+                    fill="freeze"
+                    #from_pause_to_play />
+                <animate
+                    attributeName="d"
+                    dur="300ms"
+                    from="M 19 7 L 24 7 L 24 26 L 19 26"
+                    to="M 8 7 L 26 17 L 26 17 L 8 26"
+                    fill="freeze"
+                    #from_play_to_pause
+                    begin="indefinite" />
+              </path>                
             </svg>
-          </div>      
-          <div>
-            <svg *ngIf="isNextVideo()" (click)="next()" height="33" width="33">
+          </div>
+          <div *ngIf="!isMobileDevice && isNextVideo()">
+            <svg (click)="next()">
                 <use xlink:href="./assets/media-controls.svg#next" href="./assets/media-controls.svg#next" x="0" y="0" />
             </svg>
           </div>
-        </div>      
-      </div>
-      <div *ngIf="(config.isVideoLoader == null || config.isVideoLoader) && canPlay == null" class="loader-wrapper" [ngClass]="{ 'mobile-device': isMobileDevice }">
-          <div class="loader"></div>
-      </div>
-      <div *ngIf="((canPlay != null && videoElement.ended) || canPlay == false) && isNextVideo()" class="next-loader" [ngClass]="{ 'mobile-device': isMobileDevice }">
-        <ng-container *ngIf="isMobileDevice">
-          <svg>
-            <circle cx="50%" cy="50%" r="11%"/>
-          </svg>
-        </ng-container>
-        <ng-container *ngIf="!isMobileDevice">
-          <svg >
-            <circle cx="50%" cy="50%" r="42"/>
-          </svg>
-        </ng-container>
-      </div>
-      <div *ngIf="videoName" class="video-title" #videoTitleContainer>
-          <div class="video-title-text">
-            {{ videoName }}          
+          <div class="duration-time" [ngClass]="{ 'mobile-device': isMobileDevice }">
+              {{ currentTime }} / {{ duration }}
           </div>
-      </div>
-      <div class="video-container">
-        <video playsinline #mediaVideo controls width="100%" (click)="videoClickEvent()">
-            <source #mediaVideoSource [type]='videoType'>
-            <track *ngFor="let subtitle of subtitles; let i = index" [id]="subtitle.id" [label]="subtitle.name" kind="subtitles" [src]="subtitle.src" [attr.default]="subtitle.id == actualSubtitleId ? true : null">
-        </video>
-      </div>
-      <div id="media-control-container" #mediaControlContainer (mouseenter)="mediaControlContainerMouseEnter()" (mouseleave)="mediaControlContainerMouseLeave()">
-        <div id="media-controls">
-          <div class="progress-thumb">
-            <input [attr.disabled]="!canPlay ? true : null" type="range" min="0" [max]="progressSliderMaxValue" [value]="progressSliderValue" class="progress-slider" [ngClass]="{ 'mobile-device': isMobileDevice }" #progressSlider (input)="setProgressSlider(progressSlider.value)" (mousemove)="progressThumbMouseMove($event)" (mouseleave)="progressThumbMouseLeave()">
-          </div>
-          <div class="meter" #meter>
-            <span #progressContainer class="progress-container progress-base">
-              <span class="progress">
-              </span>
-            </span>
-            <span #progressContainerHover class="progress-container progress-hover">
-              <span class="progress"></span>
-            </span>
-            <span class="progress-container progress-helper" (mousemove)="progressHelperMouseMove($event)">
-              <span class="progress"></span>
-            </span>
-          </div>
-          <div id="control-buttons" [ngClass]="{ 'mobile-device': isMobileDevice }">
-            <div *ngIf="!isMobileDevice">
-              <svg (click)="prev()">
-                  <use xlink:href="./assets/media-controls.svg#prev" href="./assets/media-controls.svg#prev" x="0" y="0" />
-              </svg>
-            </div>
-            <div *ngIf="!isMobileDevice">
-              <svg (click)="playPause()">
-                <path id='line1' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
-                  <animate
-                    attributeName="d"
-                    dur="300ms" 
-                    from="M 8 7 L 26 17 L 26 17 L 8 26"
-                    to="M 8 7 L 13 7 L 13 26 L 8 26"
-                    begin="indefinite"
-                    fill="freeze"
-                    #from_pause_to_play />
-                  <animate
-                    attributeName="d"
-                    dur="300ms"
-                    from="M 8 7 L 13 7 L 13 26 L 8 26"
-                    to="M 8 7 L 26 17 L 26 17 L 8 26"
-                    fill="freeze"
-                    #from_play_to_pause
-                    begin="indefinite" />
-                </path>
-                <path id='line2' d="M 8 7 L 26 17 L 26 17 L 8 26" style="fill:white;">
-                  <animate
-                      attributeName="d"
-                      dur="300ms" 
-                      from="M 8 7 L 26 17 L 26 17 L 8 26"
-                      to="M 19 7 L 24 7 L 24 26 L 19 26"
-                      begin="indefinite"
-                      fill="freeze"
-                      #from_pause_to_play />
-                  <animate
-                      attributeName="d"
-                      dur="300ms"
-                      from="M 19 7 L 24 7 L 24 26 L 19 26"
-                      to="M 8 7 L 26 17 L 26 17 L 8 26"
-                      fill="freeze"
-                      #from_play_to_pause
-                      begin="indefinite" />
-                </path>                
-              </svg>
-            </div>
-            <div *ngIf="!isMobileDevice && isNextVideo()">
-              <svg (click)="next()">
-                  <use xlink:href="./assets/media-controls.svg#next" href="./assets/media-controls.svg#next" x="0" y="0" />
-              </svg>
-            </div>
-            <div class="duration-time" [ngClass]="{ 'mobile-device': isMobileDevice }">
-                {{ currentTime }} / {{ duration }}
-            </div>
-            <div class="volume-container" [ngClass]="{ 'mobile-device': isMobileDevice }">
-              <svg (click)=mute() style="width: 36px;">
-                  <use xlink:href="./assets/media-controls.svg#volume_base" href="./assets/media-controls.svg#volume_base" />              
-                  <ng-container *ngIf="!muted; else mutePaths">
-                    <ng-container *ngIf="volumePercent > 0">
-                      <use xlink:href="./assets/media-controls.svg#volume_up1" href="./assets/media-controls.svg#volume_up1" />              
-                    </ng-container>
-                    <ng-container *ngIf="volumePercent > 50">
-                      <use xlink:href="./assets/media-controls.svg#volume_up2" href="./assets/media-controls.svg#volume_up2" />                                
-                    </ng-container>
+          <div class="volume-container" [ngClass]="{ 'mobile-device': isMobileDevice }">
+            <svg (click)=mute() style="width: 36px;">
+                <use xlink:href="./assets/media-controls.svg#volume_base" href="./assets/media-controls.svg#volume_base" />              
+                <ng-container *ngIf="!muted; else mutePaths">
+                  <ng-container *ngIf="volumePercent > 0">
+                    <use xlink:href="./assets/media-controls.svg#volume_up1" href="./assets/media-controls.svg#volume_up1" />              
                   </ng-container>
-                  <ng-template #mutePaths>
-                    <use xlink:href="./assets/media-controls.svg#volume_muted1" href="./assets/media-controls.svg#volume_muted1" />              
-                    <use xlink:href="./assets/media-controls.svg#volume_muted2" href="./assets/media-controls.svg#volume_muted2" />              
-                  </ng-template>              
-              </svg>
-              <div class="volume-setting-container" *ngIf="!isMobileDevice">
-                  <input type="range" min="0" max="100" [value]="volumePercent" class="custom-slider" (input)="setVolume($event)">
-              </div>
+                  <ng-container *ngIf="volumePercent > 50">
+                    <use xlink:href="./assets/media-controls.svg#volume_up2" href="./assets/media-controls.svg#volume_up2" />                                
+                  </ng-container>
+                </ng-container>
+                <ng-template #mutePaths>
+                  <use xlink:href="./assets/media-controls.svg#volume_muted1" href="./assets/media-controls.svg#volume_muted1" />              
+                  <use xlink:href="./assets/media-controls.svg#volume_muted2" href="./assets/media-controls.svg#volume_muted2" />              
+                </ng-template>              
+            </svg>
+            <div class="volume-setting-container" *ngIf="!isMobileDevice">
+                <input type="range" min="0" max="100" [value]="volumePercent" class="custom-slider" (input)="setVolume($event)">
             </div>
-            <div class="right-section">
-              <div stopPropagation *ngIf="subtitles && subtitles.length > 0" class="subtitle-select-container">
-                <svg (click)="openSubtitles()">
-                  <use xlink:href="./assets/media-controls.svg#cc" href="./assets/media-controls.svg#cc" x="0" y="4" />
-                </svg>
-                <div class="dropup-content" #dropUpContent>
-                  <div class="dropup-title">
-                      {{ config.subtitleText || 'Subtitles' }}
+          </div>
+          <div class="right-section">
+            <div stopPropagation *ngIf="subtitles && subtitles.length > 0" class="subtitle-select-container">
+              <svg (click)="openSubtitles()">
+                <use xlink:href="./assets/media-controls.svg#cc" href="./assets/media-controls.svg#cc" x="0" y="4" />
+              </svg>
+              <div class="dropup-content" #dropUpContent>
+                <div class="dropup-title">
+                    {{ config.subtitleText || 'Subtitles' }}
+                </div>
+                <div class="dropup-container">
+                  <div [ngClass]="{'active': !actualSubtitleId}" (click)="setSubtitle()">
+                      {{ config.subtitleOffText || 'Off' }}
                   </div>
-                  <div class="dropup-container">
-                    <div [ngClass]="{'active': !actualSubtitleId}" (click)="setSubtitle()">
-                        {{ config.subtitleOffText || 'Off' }}
-                    </div>
-                    <div *ngFor="let subtitle of subtitles" [ngClass]="{ 'active': actualSubtitleId == subtitle.id }" (click)="setSubtitle(subtitle.id)">
-                      {{ subtitle.name }}
-                    </div>
+                  <div *ngFor="let subtitle of subtitles" [ngClass]="{ 'active': actualSubtitleId == subtitle.id }" (click)="setSubtitle(subtitle.id)">
+                    {{ subtitle.name }}
                   </div>
                 </div>
               </div>
-              <div class="pip-container" *ngIf="supportPictureInPicture">
-                <svg (click)="pipIsActive ? pipExit() : pipEnter()">
-                    <use *ngIf="!pipIsActive" xlink:href="./assets/media-controls.svg#pip_enter" href="./assets/media-controls.svg#pip_enter" x="0" y="0" />
-                    <use *ngIf="pipIsActive" xlink:href="./assets/media-controls.svg#pip_exit" href="./assets/media-controls.svg#pip_exit" x="0" y="0" />
-                </svg>
-              </div>     
-              <div *ngIf="supportFullScreen && !pipIsActive">
-                <svg (click)="!isFullScreen ? fullScreen() : exitFullScreen()">
-                  <use xlink:href="./assets/media-controls.svg#fullScreen_lt" href="./assets/media-controls.svg#fullScreen_lt" x="0" y="0" />              
-                  <use xlink:href="./assets/media-controls.svg#fullScreen_lb" href="./assets/media-controls.svg#fullScreen_lb" x="0" y="0" />
-                  <use xlink:href="./assets/media-controls.svg#fullScreen_rt" href="./assets/media-controls.svg#fullScreen_rt" x="0" y="0" />
-                  <use xlink:href="./assets/media-controls.svg#fullScreen_rb" href="./assets/media-controls.svg#fullScreen_rb" x="0" y="0" />
-                  <ng-container *ngIf="isFullScreen">
-                    <use xlink:href="./assets/media-controls.svg#fullScreen_exit_lrb" href="./assets/media-controls.svg#fullScreen_exit_lrb" x="0" y="0" />
-                    <use xlink:href="./assets/media-controls.svg#fullScreen_exit_rlt" href="./assets/media-controls.svg#fullScreen_exit_rlt" x="0" y="0" />
-                  </ng-container>
-                </svg>
-              </div>     
             </div>
+            <div class="pip-container" *ngIf="supportPictureInPicture && (actualVideo == null || !actualVideo.isYoutubeVideo)">
+              <svg (click)="pipIsActive ? pipExit() : pipEnter()">
+                  <use *ngIf="!pipIsActive" xlink:href="./assets/media-controls.svg#pip_enter" href="./assets/media-controls.svg#pip_enter" x="0" y="0" />
+                  <use *ngIf="pipIsActive" xlink:href="./assets/media-controls.svg#pip_exit" href="./assets/media-controls.svg#pip_exit" x="0" y="0" />
+              </svg>
+            </div>     
+            <div *ngIf="supportFullScreen && !pipIsActive">
+              <svg (click)="!isFullScreen ? fullScreen() : exitFullScreen()">
+                <use xlink:href="./assets/media-controls.svg#fullScreen_lt" href="./assets/media-controls.svg#fullScreen_lt" x="0" y="0" />              
+                <use xlink:href="./assets/media-controls.svg#fullScreen_lb" href="./assets/media-controls.svg#fullScreen_lb" x="0" y="0" />
+                <use xlink:href="./assets/media-controls.svg#fullScreen_rt" href="./assets/media-controls.svg#fullScreen_rt" x="0" y="0" />
+                <use xlink:href="./assets/media-controls.svg#fullScreen_rb" href="./assets/media-controls.svg#fullScreen_rb" x="0" y="0" />
+                <ng-container *ngIf="isFullScreen">
+                  <use xlink:href="./assets/media-controls.svg#fullScreen_exit_lrb" href="./assets/media-controls.svg#fullScreen_exit_lrb" x="0" y="0" />
+                  <use xlink:href="./assets/media-controls.svg#fullScreen_exit_rlt" href="./assets/media-controls.svg#fullScreen_exit_rlt" x="0" y="0" />
+                </ng-container>
+              </svg>
+            </div>     
           </div>
         </div>
-      </div>  
-    </div>
-    <div class="video-list-container custom-col-4" #videoListContainer>
-      <div class="video-list-element" #videoListElement (click)="loadVideo(i)" [ngClass]="{ 'active': actualVideoIndex == i }" *ngFor="let video of config.sources; let i = index">
-        <div class="video-list-content-container">
-          <div class="video-list-content">
-            <div class="video-name">
-              {{ video.videoName }}
-            </div>
-            <div class="video-artist">
-              {{ video.artist }}
-            </div>
+      </div>
+    </div>  
+  </div>
+  <div class="video-list-container custom-col-4" #videoListContainer>
+    <div class="video-list-element" #videoListElement (click)="loadVideo(i)" [ngClass]="{ 'active': actualVideoIndex == i }" *ngFor="let video of config.sources; let i = index">
+      <div class="video-list-content-container">
+        <div class="video-list-content">
+          <div class="video-name">
+            {{ video.videoName }}
+          </div>
+          <div class="video-artist">
+            {{ video.artist }}
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>

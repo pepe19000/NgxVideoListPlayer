@@ -10,6 +10,7 @@ export interface IVideoSource {
     type?: string;
     artist?: string;
     subtitles?: IVideoSubtitle[];
+    isYoutubeVideo?: boolean;
 }
 
 export interface IVideoConfig {

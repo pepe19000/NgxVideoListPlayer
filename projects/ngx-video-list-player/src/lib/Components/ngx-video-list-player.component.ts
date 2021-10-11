@@ -1,20 +1,23 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, Output, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, Output, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
 import { VideoEventTypes } from '../Models/video-event-types.model';
 import { } from '../Models/global.model';
-import { IVideoConfig } from '../Models/ngx-video-list-player.config';
+import { IVideoConfig, IVideoSource } from '../Models/ngx-video-list-player.config';
+import { YoutubeStateConstant } from '../Constants/youtube-state.constant';
 import { IExtendedVideoSubtitle } from '../Models/custom.config';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { EventEmitter } from '@angular/core';
+import { YouTubePlayer } from '@angular/youtube-player';
 
 @Component({
   selector: 'ngx-video-list-player',
   templateUrl: 'ngx-video-list-player.component.html',
   styleUrls: ['ngx-video-list-player.component.scss']
 })
-export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
+export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit, OnDestroy {
 
     videoElement: HTMLVideoElement;
     private mediaControlElement: HTMLElement;
+    actualVideo: IVideoSource;
 
     @ViewChild('mediaVideo') video: ElementRef;
     @ViewChild('mediaVideoSource') videoSource: ElementRef;
@@ -32,6 +35,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     @ViewChildren("videoListElement") videoListElements: QueryList<ElementRef>;
     @ViewChild("mobileDeviceMainPprContainer") mobileDeviceMainPprContainer: ElementRef;
     @ViewChild("subtitleModal") subtitleModal: ElementRef;
+    @ViewChild('youtubePlayer', {static: true}) youtubePlayer: YT.Player;
 
     @Input() config: IVideoConfig;
     @Output() onTimeUpdate = new EventEmitter();
@@ -42,6 +46,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     private disableControlHide: boolean = false;
     private displayControlsTimeout: NodeJS.Timeout;
     private countDownCircleTimeout: NodeJS.Timeout;
+    private youtubeCurrentTimeInterval: NodeJS.Timeout;
     private mediaPlayerIsFocused: boolean = false;
     private actualVideoIndex: number = 0;
     private firstSourceLoad: boolean = false;
@@ -64,6 +69,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     videoType: string;
     actualSubtitleId: string;
     isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    youtubeIsPaused: boolean = false;
+    youtubeIsEnded: boolean = false;
 
     //Safari does not trigger CanPlay event
     isSafariBrowser: boolean = navigator.userAgent.toLowerCase().indexOf("safari") != -1 && navigator.userAgent.toLowerCase().indexOf("chrome") == -1;
@@ -74,7 +81,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
               
     }
 
-    ngOnInit():void {
+    ngOnInit():void {        
         if(!this.config.isAutoPlay)
             this.config.isAutoPlay = false;
 
@@ -170,6 +177,9 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     }
 
     videoEventHandler(ev: Event):void {
+        if(this.actualVideo.isYoutubeVideo && ev.type != VideoEventTypes.FullScreenChange)
+            return;
+            
         switch(ev.type){
             case VideoEventTypes.TimeUpdate: 
                 if(!this.videoElement.duration)
@@ -178,34 +188,16 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                     return;
                 }
                 
-                const percentage = (100 / this.videoElement.duration) * this.videoElement.currentTime;
-                this.renderer.setStyle(this.progressContainer.nativeElement, "width", `${percentage}%`);
-                this.currentTime = `${Math.floor(this.videoElement.currentTime / 60)}:${Math.floor(this.videoElement.currentTime % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
-                this.progressSliderValue = percentage * (this.progressSliderMaxValue / 100);
-                this.onTimeUpdate.emit();
+                this.timeUpdateEvent();
                 break;
             case VideoEventTypes.LoadedMetadata: 
-                this.duration = `${Math.floor(this.videoElement.duration / 60)}:${Math.floor(this.videoElement.duration % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
-                this.firstSourceLoad = true;
-                this.supportFullScreen ||= this.videoElement.webkitSupportsFullscreen;
-                if(this.isSafariBrowser)
-                {
-                    this.canPlayEvent();
-                    this.onCanPlay.emit();
-                }
-
-                this.onLoadedMetadata.emit();
+                this.loadMetadataEvent();
                 break;
             case VideoEventTypes.FullScreenChange:
                 this.isFullScreen = !!document.fullscreenElement;
                 break;
             case VideoEventTypes.Ended: 
-                this.endEvent();
-                if(this.isNextVideo()) {
-                    this.countDownCircleTimeout = setTimeout(() => {
-                        this.next();
-                    }, 5000);
-                }
+                this.endEvent(true);
                 break;
             case VideoEventTypes.LeavePictureInPicture:
                 this.pipIsActive = false;
@@ -214,8 +206,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.changeDetectorRef.detectChanges();
                 //setTimeout is beacuse of exitPiP pause
                 setTimeout(() => {
-                    if (this.videoElement.ended) {
-                        this.endEvent();
+                    if (this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getPlayerState() == YoutubeStateConstant.Ended : this.videoElement.ended) {
+                        this.endEvent(false);
                     }
                 }, 1);
                 break;
@@ -234,17 +226,22 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
                 this.canPlayEvent();
                 this.onCanPlay.emit();
                 break;
-            case VideoEventTypes.Error: 
-                this.resizeVideoListContainer();
-                this.canPlay = false;
-                this.firstSourceLoad = false;
-                this.firstVideoLoad = false;
-                if(this.isNextVideo()) {
-                    this.countDownCircleTimeout = setTimeout(() => {
-                        this.next();
-                    }, 5000);
-                }
+            case VideoEventTypes.Error:                 
+                this.videoLoadErrorHandling();
                 break;
+        }
+    }    
+
+    private videoLoadErrorHandling() {
+        this.resizeVideoListContainer();
+        this.canPlay = false;
+        this.firstSourceLoad = false;
+        this.firstVideoLoad = false;
+        if(this.isNextVideo()) {
+            this.clearCountDownCircleTimeout();
+            this.countDownCircleTimeout = setTimeout(() => {
+                this.next();
+            }, 5000);
         }
     }
 
@@ -262,10 +259,21 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         this.firstVideoLoad = false;
     }
 
-    private endEvent(): void{
+    private endEvent(isNextEvent: boolean): void{
+        if(isNextEvent) {
+            if(this.isNextVideo()) {
+                this.clearCountDownCircleTimeout();
+                this.countDownCircleTimeout = setTimeout(() => {
+                    this.next();
+                }, 5000);
+            }
+        }
         this.fromPlayToPause.forEach(element => {
             element.nativeElement.beginElement();            
         });
+
+        if(this.actualVideo != null && this.actualVideo.isYoutubeVideo)
+            this.youtubeIsEnded = true;
     }
 
     async pipEnter():Promise<void> {
@@ -284,6 +292,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
             element.nativeElement.beginElement();            
         });
         this.mediaPlayerMouseLeave();  
+        if(this.actualVideo != null && this.actualVideo.isYoutubeVideo)
+            this.youtubeIsPaused = false;
     }
 
     private pauseEvent():void {
@@ -292,6 +302,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         });
         this.mediaPlayerMouseMove();
         this.clearMobileDeviceMainPprContainerStyles();
+        if(this.actualVideo != null && this.actualVideo.isYoutubeVideo)
+            this.youtubeIsPaused = true;
     }
     
     private clearMobileDeviceMainPprContainerStyles() {
@@ -302,18 +314,35 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         }
     }
 
-    playPause():void {       
+    playPause():void {   
         if(!this.canPlay)
             return;
         
         this.clearCountDownCircleTimeout();
+
+        if(this.actualVideo.isYoutubeVideo) {
+            var youtubeState = this.youtubePlayer.getPlayerState();
+            this.youtubeIsEnded = false;
+            if(youtubeState != YoutubeStateConstant.Playing)
+            {
+                this.youtubePlayer.playVideo();
+                this.youtubeIsPaused = false;
+            }
+            else
+            {
+                this.youtubePlayer.pauseVideo();
+                this.youtubeIsPaused = true;
+            }
+        }
+        else {
+            if(this.videoElement.paused || this.videoElement.ended) {
+                this.videoElement.play();
+            }
+            else{
+                this.videoElement.pause();       
+            }
+        }
         
-        if(this.videoElement.paused || this.videoElement.ended) {
-            this.videoElement.play();
-        }
-        else{
-            this.videoElement.pause();       
-        }
     }
 
     fullScreen():void {
@@ -327,6 +356,9 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
             this.mediaControlElement.mozRequestFullscreen();
         } else if(this.videoElement.webkitEnterFullscreen)
             this.videoElement.webkitEnterFullscreen();
+
+        if(this.actualVideo.isYoutubeVideo)
+            this.isFullScreen = true;
     }
 
     exitFullScreen():void {
@@ -339,6 +371,9 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         } else if (document.mozCancelFullScreen) {
             document.mozCancelFullScreen();
         }
+
+        if(this.actualVideo.isYoutubeVideo)
+            this.isFullScreen = false;
     }
 
     isNextVideo(): boolean {
@@ -365,7 +400,92 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         }
     }
 
-    private loadVideo(index?: number): void {
+    private loadMetadataEvent() {
+        const duration = this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getDuration() :  this.videoElement.duration;
+        if(duration == 0)
+            this.duration = "0:00"
+        else
+            this.duration = `${Math.floor(duration / 60)}:${Math.floor(duration % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
+
+        this.firstSourceLoad = true;
+        this.supportFullScreen ||= this.videoElement.webkitSupportsFullscreen;
+        if(this.isSafariBrowser)
+        {
+            this.canPlayEvent();
+            this.onCanPlay.emit();
+        }
+
+        this.onLoadedMetadata.emit();
+    }
+
+    private timeUpdateEvent() {
+        try {
+            const duration = this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getDuration() :  this.videoElement.duration;
+            let currentTime = this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getCurrentTime() :  this.videoElement.currentTime;
+            if(!currentTime)
+                currentTime = 0;
+    
+            let percentage = (100 / duration) * currentTime;
+            if(isNaN(percentage))
+                percentage = 0;
+
+            this.renderer.setStyle(this.progressContainer.nativeElement, "width", `${percentage}%`);
+            if(currentTime == 0)
+                this.currentTime = `0:00`;
+            else
+                this.currentTime = `${Math.floor(currentTime / 60)}:${Math.floor(currentTime % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}`;
+    
+            this.progressSliderValue = percentage * (this.progressSliderMaxValue / 100);
+            this.onTimeUpdate.emit();
+        }
+        catch { 
+            const percentage = 0;
+            this.renderer.setStyle(this.progressContainer.nativeElement, "width", `${percentage}%`);
+            this.currentTime = `0:00`;
+            this.progressSliderValue = percentage * (this.progressSliderMaxValue / 100);
+            this.onTimeUpdate.emit();
+        }
+    }
+
+    private onReadyYoutubeVideo() {
+        if(!this.actualVideo.isYoutubeVideo)
+            return;
+
+        this.setVolumeValue(this.volumePercent);
+        this.loadMetadataEvent();
+        this.canPlayEvent();
+        this.onCanPlay.emit();
+    }
+
+    private onStateChangeYoutubeVideo(event) {
+        if(!this.actualVideo.isYoutubeVideo)
+            return;
+
+        switch (event.data) {
+            case YoutubeStateConstant.Ended: 
+                this.endEvent(true); 
+                this.clearYoutubeCurrentTimeInterval();
+                break;
+            case YoutubeStateConstant.Playing: 
+                this.playEvent(); 
+                this.loadMetadataEvent(); 
+                this.clearYoutubeCurrentTimeInterval();
+                this.youtubeCurrentTimeInterval = setInterval(() => {
+                    this.timeUpdateEvent();
+                }, 100);
+                break;
+            case YoutubeStateConstant.Paused: 
+                this.pauseEvent(); 
+                this.clearYoutubeCurrentTimeInterval();
+                break;
+            case YoutubeStateConstant.VideoCued: 
+                this.onReadyYoutubeVideo();
+                break;
+        }
+
+    }
+
+    private async loadVideo(index?: number, tryNumber: number = 1): Promise<void> {
         if(index >= 0)
             this.actualVideoIndex = index;
 
@@ -389,46 +509,125 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
         this.renderer.setStyle(this.progressContainer.nativeElement, "width", `0%`);
         this.currentTime = "0:00"
 
-        const actualVideo = this.config.sources[this.actualVideoIndex];
-        this.videoName = actualVideo.videoName;
-        this.videoElement.src = actualVideo.src;
-        this.videoType = actualVideo.type;
-        this.subtitles = [];
+        this.actualVideo = this.config.sources[this.actualVideoIndex];
+        this.clearYoutubeCurrentTimeInterval();
 
-        if(actualVideo.subtitles) {
-            this.subtitles = actualVideo.subtitles.map(item => ({
-                src: item.src,
-                name: item.name,
-                default: item.default,
-                id: `video_vtt_${actualVideo.subtitles.indexOf(item)}`
-            }));
+        if(this.actualVideo.isYoutubeVideo) {
+            if(this.pipIsActive)
+                await document.exitPictureInPicture();
+
+            if(this.youtubePlayer instanceof YouTubePlayer) {
+                try {
+                    this.youtubePlayer = new YT.Player('youtubePlayer', {
+                        videoId: this.actualVideo.src,
+                        height: "100%",
+                        width: "100%",
+                        playerVars: { 'autoplay': 0, 'controls': 0, 'autohide': 1, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'loop': 1, 'modestbranding': 1, 'playsinline': 1, 'rel': 0 },
+                        events: {
+                            'onReady': this.onReadyYoutubeVideo.bind(this),
+                            'onStateChange': this.onStateChangeYoutubeVideo.bind(this),
+                            'onError': (e) => { 
+                                if(tryNumber >= 4)
+                                {
+                                    this.videoLoadErrorHandling.bind(this)();
+                                }
+                                else {
+                                    setTimeout(() => {                                    
+                                        this.loadVideo(index, ++tryNumber);
+                                    }, 1000);
+                                }
+                            }
+                        }
+                    });
+                }
+                catch {
+                    if(tryNumber >= 4)
+                        this.videoLoadErrorHandling()
+                    else {
+                        setTimeout(() => {                                    
+                            this.loadVideo(index, ++tryNumber);
+                        }, 1000);
+                        return;
+                    }
+                }
+            }
+            else {
+                this.youtubePlayer.loadVideoById(this.actualVideo.src, 0);
+                this.youtubePlayer.stopVideo();
+            }
+            this.subtitles = [];
+            this.videoElement.pause();
+
+            setTimeout(() => {                
+                this.youtubeIsEnded = false;
+                this.youtubeIsPaused = false;
+            }, 150);
         }
+        else {
+            if(!(this.youtubePlayer instanceof YouTubePlayer))
+            {
+                this.youtubePlayer.stopVideo();
+            }
 
-        var defaultSubtitle = this.subtitles.find(item => item.default);
-        if(defaultSubtitle)
-            this.actualSubtitleId = defaultSubtitle.id;
+            this.videoName = this.actualVideo.videoName;
+            this.videoElement.src = this.actualVideo.src;
+            this.videoType = this.actualVideo.type;
+            this.subtitles = [];
+    
+            if(this.actualVideo.subtitles) {
+                this.subtitles = this.actualVideo.subtitles.map(item => ({
+                    src: item.src,
+                    name: item.name,
+                    default: item.default,
+                    id: `video_vtt_${this.actualVideo.subtitles.indexOf(item)}`
+                }));
+            }
+    
+            var defaultSubtitle = this.subtitles.find(item => item.default);
+            if(defaultSubtitle)
+                this.actualSubtitleId = defaultSubtitle.id;
+            else
+                this.actualSubtitleId = null;
+        }
     }
 
-    private clearCountDownCircleTimeout():void {
+    private clearYoutubeCurrentTimeInterval(): void {
+        if(this.youtubeCurrentTimeInterval)
+            clearInterval(this.youtubeCurrentTimeInterval);
+    }
+
+    private clearCountDownCircleTimeout():void {        
         if(this.countDownCircleTimeout)
             clearTimeout(this.countDownCircleTimeout);
     }
 
     mute():void {
-        this.videoElement.muted = !this.videoElement.muted;
-        this.muted = this.videoElement.muted;
+        if(this.actualVideo.isYoutubeVideo) {
+            this.youtubePlayer.isMuted() ? this.youtubePlayer.unMute() : this.youtubePlayer.mute();
+        }
+        else {
+            this.videoElement.muted = !this.videoElement.muted;
+        }
 
-        if(this.videoElement.muted){
+        this.muted = !this.muted;
+
+        if(this.muted){
             this.volumePercent = 0;
         }
         else{
-            this.volumePercent = this.videoElement.volume * 100;
+            this.volumePercent = this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getVolume() : this.videoElement.volume * 100;
         }
     }
 
     setVolume(event: Event):void {
-        this.videoElement.muted = false;
-        this.muted = this.videoElement.muted;
+        if(this.actualVideo.isYoutubeVideo) {
+            this.youtubePlayer.unMute();
+        }
+        else {
+            this.videoElement.muted = false;
+        }
+
+        this.muted = false;
         const percentage = parseInt((event.target as HTMLInputElement).value);
 
         if(this.config.volumeCookieName)
@@ -439,7 +638,13 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     }
 
     private setVolumeValue(percentage):void  {
-        this.videoElement.volume = percentage / 100;
+        try {
+            if(this.actualVideo.isYoutubeVideo)
+                this.youtubePlayer.setVolume(percentage);
+            else
+                this.videoElement.volume = percentage / 100;
+        }
+        catch {}
     }
 
     private setVideoIndexCookie():void  {
@@ -475,7 +680,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
             this.renderer.removeStyle(this.mobileDeviceMainPprContainer.nativeElement, "opacity");
         }
 
-        if(!this.videoElement.paused && !this.videoElement.ended && !this.disableControlHide && !this.pipIsActive) {
+        if((!this.actualVideo.isYoutubeVideo && !this.videoElement.paused && !this.videoElement.ended || this.actualVideo.isYoutubeVideo && !this.youtubeIsPaused && !this.youtubeIsEnded) 
+            && !this.disableControlHide && !this.pipIsActive) {
             if(this.displayControlsTimeout) {
                 clearTimeout(this.displayControlsTimeout);
             }
@@ -484,7 +690,8 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
     }
 
     mediaPlayerMouseLeave():void {
-        if(!this.videoElement.paused && !this.videoElement.ended && !this.disableControlHide && !this.pipIsActive) {
+        if((!this.actualVideo.isYoutubeVideo && !this.videoElement.paused && !this.videoElement.ended || this.actualVideo.isYoutubeVideo && !this.youtubeIsPaused && !this.youtubeIsEnded)
+            && !this.disableControlHide && !this.pipIsActive) {
             if(!this.isMobileDevice)
                 this.openSubtitles(true);
 
@@ -549,7 +756,20 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
 
     //Value range [0..this.progressSliderMaxValue]
     setProgressSlider(value):void {
-        this.videoElement.currentTime = this.videoElement.duration * value / this.progressSliderMaxValue;
+        const duration = this.actualVideo.isYoutubeVideo ? this.youtubePlayer.getDuration() : this.videoElement.duration;
+        const currentTime = duration * value / this.progressSliderMaxValue;;
+        if(this.actualVideo.isYoutubeVideo) {
+            var playerState = this.youtubePlayer.getPlayerState();
+            if(playerState == YoutubeStateConstant.VideoCued) {
+                this.youtubePlayer.loadVideoById(this.actualVideo.src, currentTime);
+            }
+            else
+                this.youtubePlayer.seekTo(currentTime, true);
+        }
+        else {
+            this.videoElement.currentTime = currentTime;
+        }
+
         this.clearCountDownCircleTimeout();
     }
 
@@ -627,5 +847,9 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit {
 
     emptyVoid(): void {
 
+    }
+
+    ngOnDestroy() {
+        this.clearYoutubeCurrentTimeInterval();
     }
 }
