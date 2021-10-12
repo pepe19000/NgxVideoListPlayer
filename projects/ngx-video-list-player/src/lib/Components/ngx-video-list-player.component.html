@@ -106,7 +106,7 @@
       <div class="youtube-video-container" (click)="playPause()" [hidden]="actualVideo && !actualVideo.isYoutubeVideo" style="text-align: center;" (mousemove)="mediaPlayerMouseMove()" (mouseleave)="mediaPlayerMouseLeave()">
         <youtube-player id="youtubePlayer" #youtubePlayer style="position: absolute; left: 0; pointer-events: none;"></youtube-player>
       </div>
-      <video playsinline #mediaVideo [hidden]="actualVideo && actualVideo.isYoutubeVideo" controls width="100%" (click)="videoClickEvent()">
+      <video #mediaVideo [hidden]="actualVideo && actualVideo.isYoutubeVideo" controls width="100%" (click)="videoClickEvent()">
           <source #mediaVideoSource [type]='videoType'>
           <track *ngFor="let subtitle of subtitles; let i = index" [id]="subtitle.id" [label]="subtitle.name" kind="subtitles" [src]="subtitle.src" [attr.default]="subtitle.id == actualSubtitleId ? true : null">
       </video>
