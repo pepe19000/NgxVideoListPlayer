@@ -227,7 +227,7 @@
                   <use *ngIf="pipIsActive" xlink:href="./assets/media-controls.svg#pip_exit" href="./assets/media-controls.svg#pip_exit" x="0" y="0" />
               </svg>
             </div>     
-            <div *ngIf="supportFullScreen && !pipIsActive">
+            <div *ngIf="supportFullScreen && !pipIsActive && !isMobileDevice">
               <svg (click)="!isFullScreen ? fullScreen() : exitFullScreen()">
                 <use xlink:href="./assets/media-controls.svg#fullScreen_lt" href="./assets/media-controls.svg#fullScreen_lt" x="0" y="0" />              
                 <use xlink:href="./assets/media-controls.svg#fullScreen_lb" href="./assets/media-controls.svg#fullScreen_lb" x="0" y="0" />
