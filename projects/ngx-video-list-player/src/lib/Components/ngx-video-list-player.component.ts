@@ -522,7 +522,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit, OnDes
                         videoId: this.actualVideo.src,
                         height: "100%",
                         width: "100%",
-                        playerVars: { 'autoplay': 0, 'controls': 0, 'autohide': 1, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'loop': 1, 'modestbranding': 1, 'playsinline': 1, 'rel': 0 },
+                        playerVars: { 'autoplay': 0, 'controls': 0, 'autohide': 1, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'loop': 1, 'modestbranding': 1, 'playsinline': 0, 'rel': 0 },
                         events: {
                             'onReady': this.onReadyYoutubeVideo.bind(this),
                             'onStateChange': this.onStateChangeYoutubeVideo.bind(this),
