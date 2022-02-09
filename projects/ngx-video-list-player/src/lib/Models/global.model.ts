@@ -5,8 +5,8 @@ declare global {
         msExitFullscreen?: () => Promise<void>;
         mozCancelFullScreen?: () => Promise<void>;
         webkitExitFullscreen?: () => Promise<void>;
-        pictureInPictureEnabled: boolean;
-        exitPictureInPicture?: () => Promise<void>;        
+        // pictureInPictureEnabled: boolean;
+        // exitPictureInPicture?: () => Promise<void>;        
     }
   
     interface HTMLElement {
@@ -16,10 +16,10 @@ declare global {
     }
 
     interface HTMLVideoElement {
-        requestPictureInPicture?: () => Promise<void>;
+        // requestPictureInPicture?: () => Promise<void>;
         webkitEnterFullscreen?: () => Promise<void>;
         webkitSupportsFullscreen?: boolean;
-        onenterpictureinpicture: ((this: GlobalEventHandlers, ev: Event) => any) | null;
-        onleavepictureinpicture: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        // onenterpictureinpicture: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        // onleavepictureinpicture: ((this: GlobalEventHandlers, ev: Event) => any) | null;
     }
 }
