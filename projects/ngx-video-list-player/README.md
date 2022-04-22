@@ -17,7 +17,7 @@ Support Youtube videos from v12.2.2
 
 Check out [the demo](https://pepe19000.github.io/Demo/menu/NgxVideoListPlayer)!
 
-*Note: v13.0.1 is out and supports Angular 13 and Youtube videos!*
+*Note: v13.0.2 is out and supports Angular 13!*
 
 ## Install
 

@@ -1,6 +1,6 @@
 {
   "name": "ngx-video-list-player",
-  "version": "13.0.1",
+  "version": "13.0.2",
   "description": "A simple Angular video player with video list. No dependecies. Only custom controls, css, ts and svgs. Youtube support",
   "author": "Péter Babják",
   "repository": {

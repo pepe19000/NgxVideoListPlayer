@@ -261,7 +261,7 @@ export class NgxVideoListPlayerComponent implements AfterViewInit, OnInit, OnDes
 
     private endEvent(isNextEvent: boolean): void{
         if(isNextEvent) {
-            if(this.isNextVideo()) {
+            if(this.isNextVideo() && this.config.isAutoPlay) {
                 this.clearCountDownCircleTimeout();
                 this.countDownCircleTimeout = setTimeout(() => {
                     this.next();
